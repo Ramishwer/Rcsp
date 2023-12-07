@@ -75,7 +75,11 @@ public class FirstAgent {
     private String msisdn;
 
   
-
+   public FirstAgent(String msisdn) {
+       this.msisdn=msisdn;
+     
+        this.rbmApiHelper = new RbmApiHelper();
+    }
   
 
 
@@ -123,7 +127,7 @@ public class FirstAgent {
             // String msisdn = args[0];
             String msisdn = "+919779072900";
             String mode = "chat";
-            String fileUrl = "http://www.google.com/logos/doodles/2015/googles-new-logo-5078286822539264.3-hp2x.gif";
+            String fileUrl = "http://reports.sms24hours.com:8021/RPR/img/images.jpg";
             if (args.length > 1) {
                 mode = args[1];
             }
@@ -132,7 +136,7 @@ public class FirstAgent {
             }
     
             // create agent
-            FirstAgent firstAgent = new FirstAgent();
+            FirstAgent firstAgent = new FirstAgent(msisdn);
 
             if (mode.equals("chat")) {
                 
@@ -152,7 +156,7 @@ public class FirstAgent {
 
     private void sendfile(String fileUrl,String msisdn) {
         try {
-    this .msisdn=msisdn;
+   
               List<Suggestion> suggestions = new ArrayList<Suggestion>();
             suggestions.add(
                     new SuggestionHelper("1.Product List", "suggestion_1").getSuggestedReply());
@@ -165,9 +169,7 @@ public class FirstAgent {
             suggestedAction.setText("2.Vacancies");
             suggestedAction.setPostbackData("suggestion_2");
             suggestedAction.setOpenUrlAction(openUrlAction);
-            if(rbmApiHelper==null){
-                this.rbmApiHelper=new RbmApiHelper();
-            }
+           
  
             // attaching action to a suggestion
             Suggestion suggestion = new Suggestion();

@@ -21,6 +21,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.services.rcsbusinessmessaging.v1.RCSBusinessMessaging;
 import com.google.api.services.rcsbusinessmessaging.v1.model.OpenUrlAction;
+import com.google.api.services.rcsbusinessmessaging.v1.model.StandaloneCard;
 import com.google.api.services.rcsbusinessmessaging.v1.model.SuggestedAction;
 import com.google.api.services.rcsbusinessmessaging.v1.model.Suggestion;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -31,6 +32,8 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.rbm.samples.lib.RbmApiHelper;
+import com.google.rbm.samples.lib.cards.CardOrientation;
+import com.google.rbm.samples.lib.cards.MediaHeight;
 import db.dbcon;
 
 import java.io.File;
@@ -248,7 +251,7 @@ public class PULL_Receiver {
         if (responseText.equals("stop")) {
             // Any real agent must support this command
             // TODO: Client typed stop, agent should no longer send messages to this msisdn
-            logger.info(msisdn + " asked to stop agent messaging");
+            logger.info(senderPhoneNumber + " asked to stop agent messaging");
         } else if (responseText.equalsIgnoreCase("1.Product List")) {
 
            
@@ -288,8 +291,21 @@ public class PULL_Receiver {
             suggestions.add(suggestion);
              suggestions.add(suggestion2);
               suggestions.add(suggestion3);
+              String fileUrl="http://reports.sms24hours.com:8021/RPR/img/images.jpg";
             try {
-                rbmApiHelper.sendTextMessage("Please choose From Below:", senderPhoneNumber, suggestions);
+                 StandaloneCard standaloneCard = rbmApiHelper.createStandaloneCard(
+                    "Product list",
+                    "Please choose From Below:",
+                    fileUrl,
+                    MediaHeight.MEDIUM,
+                    CardOrientation.VERTICAL,
+                    suggestions
+            );
+            
+            rbmApiHelper.uploadFile(fileUrl);
+            rbmApiHelper.sendStandaloneCard(standaloneCard, senderPhoneNumber);
+                
+               // rbmApiHelper.sendTextMessage("Please choose From Below:", senderPhoneNumber, suggestions);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
