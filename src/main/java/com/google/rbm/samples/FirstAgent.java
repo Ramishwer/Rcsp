@@ -16,41 +16,25 @@ limitations under the License.
 package com.google.rbm.samples;
 
 // [START import_libraries]
-
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.services.rcsbusinessmessaging.v1.RCSBusinessMessaging;
+import com.google.api.services.rcsbusinessmessaging.v1.model.CreateCalendarEventAction;
 import com.google.api.services.rcsbusinessmessaging.v1.model.OpenUrlAction;
 import com.google.api.services.rcsbusinessmessaging.v1.model.StandaloneCard;
-import com.google.api.services.rcsbusinessmessaging.v1.model.SuggestedAction;
-import com.google.api.services.rcsbusinessmessaging.v1.model.Suggestion;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
-import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.pubsub.v1.ProjectSubscriptionName;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.rbm.samples.lib.RbmApiHelper;
+import com.google.rbm.samples.lib.StandaloneCardHelper;
 import com.google.rbm.samples.lib.SuggestionHelper;
 import com.google.rbm.samples.lib.cards.CardOrientation;
+import com.google.rbm.samples.lib.cards.CardWidth;
 import com.google.rbm.samples.lib.cards.MediaHeight;
-import db.dbcon;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONObject;
+
+import com.google.api.services.rcsbusinessmessaging.v1.model.SuggestedAction;
+import com.google.api.services.rcsbusinessmessaging.v1.model.Suggestion;
+import com.google.rbm.samples.lib.RbmApiHelper;
+import static java.lang.System.out;
 // [END import_libraries]
 
 /**
@@ -74,16 +58,13 @@ public class FirstAgent {
     private RbmApiHelper rbmApiHelper;
     private String msisdn;
 
-  
-   public FirstAgent(String msisdn) {
-       this.msisdn=msisdn;
-     
+    public FirstAgent(String msisdn) {
+        this.msisdn = msisdn;
+
         this.rbmApiHelper = new RbmApiHelper();
     }
-  
 
-
-    private void sendTesterInvite() {
+    public void sendTesterInvite() {
         try {
             rbmApiHelper.registerTester(msisdn);
         } catch (Exception e) {
@@ -91,22 +72,22 @@ public class FirstAgent {
         }
     }
 
-    private void sendGreeting(String msisdn) {
+    public void sendGreeting(String url, String s1, String s2) {
         try {
-            this.msisdn=msisdn;
-           // rbmApiHelper.sendTextMessage("What is your favorite color?",
-                 //   msisdn);
+            this.msisdn = msisdn;
+            // rbmApiHelper.sendTextMessage("What is your favorite color?",
+            //   msisdn);
 
             List<Suggestion> suggestions = new ArrayList<Suggestion>();
             suggestions.add(
-                    new SuggestionHelper("1.Product List", "suggestion_1").getSuggestedReply());
+                    new SuggestionHelper(s1, "suggestion_1").getSuggestedReply());
 
             OpenUrlAction openUrlAction = new OpenUrlAction();
-            openUrlAction.setUrl("https://virtuosonetsoft.com/career");
+            openUrlAction.setUrl(url);
 
             // creating a suggested action based on an open url action
             SuggestedAction suggestedAction = new SuggestedAction();
-            suggestedAction.setText("2.Vacancies");
+            suggestedAction.setText(s2);
             suggestedAction.setPostbackData("suggestion_2");
             suggestedAction.setOpenUrlAction(openUrlAction);
 
@@ -121,76 +102,202 @@ public class FirstAgent {
     }
 
     // [START run_application]
-    public static void main(String[] args) {
-
-        try {
-            // String msisdn = args[0];
-            String msisdn = "+919779072900";
-            String mode = "chat";
-            String fileUrl = "http://reports.sms24hours.com:8021/RPR/img/images.jpg";
-            if (args.length > 1) {
-                mode = args[1];
-            }
-            if (args.length > 0) {
-                msisdn = args[0];
-            }
-    
-            // create agent
-            FirstAgent firstAgent = new FirstAgent(msisdn);
-
-            if (mode.equals("chat")) {
-                
-                firstAgent.sendfile(fileUrl,msisdn);
-
-            } else {
-                // send tester invite to user
-                firstAgent.sendTesterInvite();
-
-                logger.info("Tester invite sent to " + msisdn);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void main(String[] args) {
+//
+//        try {
+//            // String msisdn = args[0];
+//            String msisdn = "+919779072900";
+//            String mode = "chat";
+//            String fileUrl = "http://reports.sms24hours.com:8021/RPR/img/images.jpg";
+//            if (args.length > 1) {
+//                mode = args[1];
+//            }
+//            if (args.length > 0) {
+//                msisdn = args[0];
+//            }
+//
+//            // create agent
+//            FirstAgent firstAgent = new FirstAgent(msisdn);
+//
+//            if (mode.equals("chat")) {
+//
+//              
+//
+//            } else {
+//                // send tester invite to user
+//                firstAgent.sendTesterInvite();
+//
+//                logger.info("Tester invite sent to " + msisdn);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
     // [END run_application]
-
-    private void sendfile(String fileUrl,String msisdn) {
+    public void richCard(String fileUrl, String s1, String s2, String title, String description) {
         try {
-   
-              List<Suggestion> suggestions = new ArrayList<Suggestion>();
+            // Create an instance of the RBM API helper
+            RbmApiHelper rbmApiHelper = new RbmApiHelper();
+
+            // Create suggestions for chip list
+            List<Suggestion> suggestions = new ArrayList<Suggestion>();
             suggestions.add(
-                    new SuggestionHelper("1.Product List", "suggestion_1").getSuggestedReply());
+                    new SuggestionHelper(s1, "suggestion_1").getSuggestedReply());
 
-            OpenUrlAction openUrlAction = new OpenUrlAction();
-            openUrlAction.setUrl("https://virtuosonetsoft.com/career");
+            suggestions.add(
+                    new SuggestionHelper(s2, "suggestion_2").getSuggestedReply());
 
-            // creating a suggested action based on an open url action
-            SuggestedAction suggestedAction = new SuggestedAction();
-            suggestedAction.setText("2.Vacancies");
-            suggestedAction.setPostbackData("suggestion_2");
-            suggestedAction.setOpenUrlAction(openUrlAction);
-           
- 
-            // attaching action to a suggestion
-            Suggestion suggestion = new Suggestion();
-            suggestion.setAction(suggestedAction);
-            suggestions.add(suggestion);
-            
+          
 
+            // Create a standalone rich card to send to the user
             StandaloneCard standaloneCard = rbmApiHelper.createStandaloneCard(
-                    "Virtuoso Netsoft",
-                    "Welcome To Virtuoso Netsoft!!",
+                   title,
+                    description,
                     fileUrl,
                     MediaHeight.MEDIUM,
                     CardOrientation.VERTICAL,
                     suggestions
             );
-            
-            rbmApiHelper.uploadFile(fileUrl);
-            rbmApiHelper.sendStandaloneCard(standaloneCard, msisdn);
 
-        } catch (IOException e) {
+            rbmApiHelper.sendStandaloneCard(standaloneCard, msisdn);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public void RichCardCcarousels(String c1, String ctitle1, String d1, String card1Image1, String c2, String ctitle2, String d2, String card2Image2, String c3, String ctitle3, String d3, String card3Image3) {
+
+        try {
+            // Create an instance of the RBM API helper
+            RbmApiHelper rbmApiHelper = new RbmApiHelper();
+
+            List cardContents = new ArrayList();
+
+            // Images for the carousel cards
+            // Create suggestions for first carousel card
+            List card1Suggestions = new ArrayList();
+            card1Suggestions.add(
+                    new SuggestionHelper(c1, "card_1"));
+
+            cardContents.add(
+                    new StandaloneCardHelper(
+                            ctitle1,
+                            d1,
+                            card1Image1,
+                            card1Suggestions)
+                            .getCardContent(MediaHeight.SHORT)
+            );
+
+            // Images for the carousel cards
+            // Create suggestions for second carousel card
+            List card2Suggestions = new ArrayList();
+            card2Suggestions.add(
+                    new SuggestionHelper(c2, "card_2"));
+
+            cardContents.add(
+                    new StandaloneCardHelper(
+                            ctitle2,
+                            d2,
+                            card2Image2,
+                            card2Suggestions)
+                            .getCardContent(MediaHeight.SHORT)
+            );
+
+            // Create suggestions for second carousel card
+            List card3Suggestions = new ArrayList();
+            card3Suggestions.add(
+                    new SuggestionHelper(c3, "card_3"));
+
+            cardContents.add(
+                    new StandaloneCardHelper(
+                            ctitle3,
+                            d3,
+                            card3Image3,
+                            card3Suggestions)
+                            .getCardContent(MediaHeight.SHORT)
+            );
+
+            // Send the carousel to the user
+            rbmApiHelper.sendCarouselCards(cardContents, CardWidth.MEDIUM, msisdn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public int textMessage(String text) {
+
+        try {
+            // Create an instance of the RBM API helper
+            RbmApiHelper rbmApiHelper = new RbmApiHelper();
+
+            // Send simple text message to user
+            rbmApiHelper.sendTextMessage(
+                    text,
+                    msisdn
+            );
+            
+            System.out.println("rcs msg "+rbmApiHelper);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+return 1;
+    }
+    
+    
+  public void createCalendarEvent(String title,String description,String startTime,String endTime,String text,String MessageText) {
+   try {
+   // Create an instance of the RBM API helper
+   RbmApiHelper rbmApiHelper = new RbmApiHelper();
+
+   // Create suggestions for chip list
+   List<Suggestion> suggestions = new ArrayList<Suggestion>();
+
+   // creating a create calendar event suggested action
+  CreateCalendarEventAction createCalendarEventAction = new CreateCalendarEventAction();
+   createCalendarEventAction.setTitle(title);
+   createCalendarEventAction.setDescription(description);
+   createCalendarEventAction.setStartTime(startTime);
+   createCalendarEventAction.setEndTime(endTime);
+
+   // creating a suggested action based on a create calendar event action
+   SuggestedAction suggestedAction = new SuggestedAction();
+   suggestedAction.setText(text);
+   suggestedAction.setPostbackData("postback_data_1234");
+   suggestedAction.setCreateCalendarEventAction(createCalendarEventAction);
+
+   // attaching action to a suggestion
+   Suggestion suggestion = new Suggestion();
+   suggestion.setAction(suggestedAction);
+
+   suggestions.add(suggestion);
+
+   // Send simple text message with the suggestion action
+   rbmApiHelper.sendTextMessage(
+      MessageText,
+      msisdn,
+      suggestions
+   );
+} catch(Exception e) {
+   e.printStackTrace();
+}
+
+   
+  
+}
+  
+   public static void main(String[] args) {
+        FirstAgent fa=new FirstAgent("+916392100079");
+        fa.textMessage("gdfgg");
+        String title="sdfdsf"; 
+       String MessageText="ftjtfhdggdggfdhfhf";
+       String description="hfdhgfdghf";
+       String startTime="2020-06-30T19:00:00Z";
+       String endTime="2020-06-30T20:00:00Z";
+       String text="sdatetetetetegfg";
+       fa.createCalendarEvent(title, description, startTime, endTime, text, MessageText);
+            
+     
+    }
+
 }
