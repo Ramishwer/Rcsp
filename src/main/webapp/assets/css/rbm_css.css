@@ -1,0 +1,28 @@
+
+        #botImage,#bannerImage {
+            width: 224px; /* Set the width to 224px */
+            height: 224px; /* Set the height to 224px */
+
+        }
+
+        .deleteButton{
+            position: relative;
+            left: 1093px;
+            top: -53px;
+        }
+        .deleteButton1{
+            position: relative;
+            left: 900px;
+            top: -52px;
+        }
+        #bannerimageModal {
+            position: absolute;
+            top: 62%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f0f0f0;
+            padding: 25px 39px;
+            width: 34%;
+            height: 246px;
+            border: 1px solid #ccc;
+        }

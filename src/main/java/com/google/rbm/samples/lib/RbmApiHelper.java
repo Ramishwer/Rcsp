@@ -125,6 +125,7 @@ public class RbmApiHelper {
      */
     public void registerTester(String msisdn) throws Exception {
         Tester tester = new Tester();
+      logger.info(tester.getInviteStatus());  
 
         // convert the msisdn into the API format
         String clientDevice = convertToApiFormat(msisdn);
